@@ -1,170 +1,32 @@
+import os
+import sys
+import socket
+import struct
 import tkinter as tk
 from tkinter import ttk
-from tkinter import messagebox as msg
-from threading import Thread as thr
-import socket, struct
-    
+from tkinter import messagebox
+from threading import Thread
+
 class HiddenGearGUI(tk.Frame):
     def __init__(self, master = None):
         super().__init__(master)
         self.master = master
         self.pack()
         self.master.withdraw()
-        self.master.title("HiddenGearGUI v1.1")
+        self.master.title("HiddenGearGUI")
         try:
-            self.master.iconbitmap("icon.ico")
+            self.master.iconbitmap(os.path.join(sys._MEIPASS, "./icon.ico"))
         except:
             pass
-        msg.showwarning(title = "HiddenGearGUI", message = "WARNING: Using hidden gear online will get you banned. Backup your save before unlocking anything.")
+        messagebox.showwarning(title = "HiddenGearGUI", message = "WARNING: Using hidden gear online will get you banned. Backup your save before unlocking anything.")
         self.master.deiconify()
-        self.create_widgets()
+        self.main_window()
         self.hide_gear()
-        self.state = 0
-
-    #Lists containing all the addresses of the gear.
-    allunlock = [0x12BD0800, 0x12BDB0B8, 0x12BA90A0, 0x12BD0688, 0x12BDAF40, 0x12BA8F28, 0x12BD94D0, 0x12BA7050, 0x12BC4D78, 0x12BD8D78, 0x12BA71C8, 0x12BC4EF0, 0x12BD8EF0, 0x12BA7340, 0x12BC5068, 0x12BD9068, 0x12BB9BC0, 0x12BD2820, 0x12BA0F60]
-    srlunlock = [0x12BD0800, 0x12BDB0B8, 0x12BA90A0]
-    srlslots = [0x12CD2A60, 0x12CD7D70, 0x12CD8AF0]
-    testfunlock = [0x12BD0688, 0x12BDAF40, 0x12BA8F28]
-    testfslots = [0x12CD1DA0, 0x12CD4DA0, 0x12CD7DA0]
-    eliteunlock = [0x12BD94D0]
-    eliteslot = [0x12CDAD70]
-    lv1unlock = [0x12BA7050, 0x12BC4D78, 0x12BD8D78]
-    lv1slots = [0x12CD2A90, 0x12CD63C0, 0x12CD8B20]
-    lv2unlock = [0x12BA71C8, 0x12BC4EF0, 0x12BD8EF0]
-    lv2slots = [0x12CD2AC0, 0x12CD6480, 0x12CD8B50]
-    lv3unlock = [0x12BA7340, 0x12BC5068, 0x12BD9068]
-    lv3slots = [0x12CD2AF0, 0x12CD64B0, 0x12CD8B80]
-    nogearunlock = [0x12BB9BC0, 0x12BD2820, 0x12BA0F60]
-    nogearslots = [0x12CD70B0, 0x12CD3EA0, 0x12CD8BB0]
-
-    #Magic that unlocks the gear.
-    def allgear(self):
-        try:
-            diff = self.get_diff()
-            self.serialPoke([x + diff for x in self.allunlock], 0x00000004) #Unlocks gear.
-            self.serialPoke([x + diff for x in self.srlslots], 0x0000733D) #Adds gear slots.
-            self.serialPoke([x + diff for x in self.testfslots], 0x0000733C) #Adds gear slots.
-            self.serialPoke([x + diff for x in self.eliteslot], 0x00006D61) #Adds gear slot.
-            self.serialPoke([x + diff for x in self.lv1slots], 0x00006979) #Adds gear slots.
-            self.serialPoke([x + diff for x in self.lv2slots], 0x0000697A) #Adds gear slots.
-            self.serialPoke([x + diff for x in self.lv3slots], 0x0000697B) #Adds gear slots.
-            self.serialPoke([x + diff for x in self.nogearslots], 0x00000000) #Adds gear slots.
-            msg.showinfo(title = "HiddenGearGUI", message = "Unlocked all gear")
-        except Exception as exception:
-            msg.showerror(title = "HiddenGearGUI", message = "An error has occured: {0}".format(exception))
-
-    def srl(self):
-        try:
-            diff = self.get_diff()
-            self.serialPoke([x + diff for x in self.srlunlock], 0x00000004) #Unlocks gear.
-            self.serialPoke([x + diff for x in self.srlslots], 0x0000733D) #Adds gear slots.
-            msg.showinfo(title = "HiddenGearGUI", message = "Unlocked SRL gear")
-        except Exception as exception:
-            msg.showerror(title = "HiddenGearGUI", message = "An error has occured: {0}".format(exception))
-
-    def testfire(self):
-        try:
-            diff = self.get_diff()
-            self.serialPoke([x + diff for x in self.testfunlock], 0x00000004) #Unlocks gear.
-            self.serialPoke([x + diff for x in self.testfslots], 0x0000733C) #Adds gear slots.
-            msg.showinfo(title = "HiddenGearGUI", message = "Unlocked Testfire gear")
-        except Exception as exception:
-            msg.showerror(title = "HiddenGearGUI", message = "An error has occured: {0}".format(exception))
-
-    def elite(self):
-        try:
-            gecko = TCPGecko(self.e0.get())
-            diff = self.get_diff()
-            gecko.pokemem(self.eliteunlock + diff, 0x00000004) #Unlocks gear.
-            gecko.pokemem(self.eliteslot + diff, 0x00006D61) #Adds gear slot.
-            gecko.s.close()
-            msg.showinfo(title = "HiddenGearGUI", message = "Unlocked Elite Octoling gear")
-        except Exception as exception:
-            msg.showerror(title = "HiddenGearGUI", message = "An error has occured: {0}".format(exception))
-    def lv1(self):
-        try:
-            diff = self.get_diff()
-            self.serialPoke([x + diff for x in self.lv1unlock], 0x00000004) #Unlocks gear.
-            self.serialPoke([x + diff for x in self.lv1slots], 0x00006979) #Adds gear slots.
-            msg.showinfo(title = "HiddenGearGUI", message = "Unlocked LV1 Hero Armor")
-        except Exception as exception:
-            msg.showerror(title = "HiddenGearGUI", message = "An error has occured: {0}".format(exception))
-
-    def lv2(self):
-        try:
-            diff = self.get_diff()
-            self.serialPoke([x + diff for x in self.lv2unlock], 0x00000004) #Unlocks gear.
-            self.serialPoke([x + diff for x in self.lv2slots], 0x0000697A) #Adds gear slots.
-            msg.showinfo(title = "HiddenGearGUI", message = "Unlocked LV2 Hero Armor")
-        except Exception as exception:
-            msg.showerror(title = "HiddenGearGUI", message = "An error has occured: {0}".format(exception))
-
-    def lv3(self):
-        try:
-            diff = self.get_diff()
-            self.serialPoke([x + diff for x in self.lv3unlock], 0x00000004) #Unlocks gear.
-            self.serialPoke([x + diff for x in self.lv3slots], 0x0000697B) #Adds gear slots.
-            msg.showinfo(title = "HiddenGearGUI", message = "Unlocked LV3 Hero Armor")
-        except Exception as exception:
-            msg.showerror(title = "HiddenGearGUI", message = "An error has occured: {0}".format(exception))
-
-    def nogear(self):
-        try:
-            diff = self.get_diff()
-            self.serialPoke([x + diff for x in self.nogearunlock], 0x00000004) #Unlocks gear.
-            self.serialPoke([x + diff for x in self.nogearslots], 0x00000000) #Adds gear slots.
-            msg.showinfo(title = "HiddenGearGUI", message = "Unlocked Invisible gear")
-        except Exception as exception:
-            msg.showerror(title = "HiddenGearGUI", message = "An error has occured: {0}".format(exception))
-
-    #Functions that make the magic work.
-    def connect(self): #Doesn't really connect, just checks if a connection can be established.
-        if self.state == 0:
-            try:
-                gecko = TCPGecko(self.e0.get())
-                self.state = 1
-                gecko.s.close()
-                self.s0.set("Disconnect")
-                self.hide_connect()
-                msg.showinfo(title = "HiddenGearGUI", message = "Connected.")
-            except Exception as exception:
-                msg.showerror(title = "HiddenGearGUI", message = "An error has occured: {0}".format(exception))
-        elif self.state == 1:
-            try:
-                self.state = 0
-                self.s0.set("Connect")
-                self.hide_gear()
-                msg.showinfo(title = "HiddenGearGUI", message = "Disconnected.")
-            except Exception as exception:
-                msg.showerror(title = "HiddenGearGUI", message = "An error has occured: {0}".format(exception))
-        else:
-            msg.showerror(title = "HiddenGearGUI", message = "Something went wrong.")
-
-    def get_diff(self): #Sets the memory offset difference (diff).
-        gecko = TCPGecko(self.e0.get())
-        JRPointer = int.from_bytes(gecko.readmem(0x106E975C, 4), "big") 
-        if JRPointer in range(0x12000000, 0x14000000): 
-            JRAddr = JRPointer + 0x92D8 
-            if int.from_bytes(gecko.readmem(JRAddr, 4), "big") == 0x000003F2: 
-                diff = JRAddr - 0x12CDADA0 
-            else:
-                raise Exception("Failed to get offset. The value in the JR's address didn't match.")
-        else:
-            raise Exception("Failed to get offset. The JR's address is out of range.")
-        return diff
- 
-    def serialPoke(self, addressTable, value):
-        gecko = TCPGecko(self.e0.get())
-        for address in addressTable:
-            if type(address) == int:
-                gecko.pokemem(address, value)
-            else:
-                raise Exception("The address is not an integer.")
-        gecko.s.close()
+        self.is_connected = False
+        self.is_active = False
 
     #tkinter stuff.
-    def create_widgets(self):
+    def main_window(self):
         self.s0 = tk.StringVar()
         self.s1 = tk.StringVar()
         self.s2 = tk.StringVar()
@@ -187,21 +49,21 @@ class HiddenGearGUI(tk.Frame):
         self.l0 = ttk.Label(self.f0, text = "Wii U IP address:")
         self.e0 = ttk.Entry(self.f0, width = 15)
         self.f1 = ttk.Labelframe(self.master, text = "Gear", width = 325, height = 140)
-        self.l1 = ttk.Label(self.f1, text = "HiddenGearGUI v1.1 by Shadow Doggo") 
-        self.b0 = ttk.Button(self.f0, width = 15, textvariable = self.s0, command = lambda: thr(target = self.connect).start())
-        self.b1 = ttk.Button(self.f1, width = 25, textvariable = self.s1, command = lambda: thr(target = self.allgear).start())
-        self.b2 = ttk.Button(self.f1, width = 25, textvariable = self.s2, command = lambda: thr(target = self.srl).start())
-        self.b3 = ttk.Button(self.f1, width = 25, textvariable = self.s3, command = lambda: thr(target = self.testfire).start())
-        self.b4 = ttk.Button(self.f1, width = 25, textvariable = self.s4, command = lambda: thr(target = self.elite).start())
-        self.b5 = ttk.Button(self.f1, width = 25, textvariable = self.s5, command = lambda: thr(target = self.lv1).start())
-        self.b6 = ttk.Button(self.f1, width = 25, textvariable = self.s6, command = lambda: thr(target = self.lv2).start())
-        self.b7 = ttk.Button(self.f1, width = 25, textvariable = self.s7, command = lambda: thr(target = self.lv3).start())
-        self.b8 = ttk.Button(self.f1, width = 25, textvariable = self.s8, command = lambda: thr(target = self.nogear).start())
+        self.l1 = ttk.Label(self.f1, text = "HiddenGearGUI v1.1a by Shadow Doggo")
+        self.b0 = ttk.Button(self.f0, width = 15, textvariable = self.s0, command = lambda: Thread(target = self.connect).start())
+        self.b1 = ttk.Button(self.f1, width = 25, textvariable = self.s1, command = lambda: Thread(target = self.allgear).start())
+        self.b2 = ttk.Button(self.f1, width = 25, textvariable = self.s2, command = lambda: Thread(target = self.srl).start())
+        self.b3 = ttk.Button(self.f1, width = 25, textvariable = self.s3, command = lambda: Thread(target = self.testfire).start())
+        self.b4 = ttk.Button(self.f1, width = 25, textvariable = self.s4, command = lambda: Thread(target = self.elite).start())
+        self.b5 = ttk.Button(self.f1, width = 25, textvariable = self.s5, command = lambda: Thread(target = self.lv1).start())
+        self.b6 = ttk.Button(self.f1, width = 25, textvariable = self.s6, command = lambda: Thread(target = self.lv2).start())
+        self.b7 = ttk.Button(self.f1, width = 25, textvariable = self.s7, command = lambda: Thread(target = self.lv3).start())
+        self.b8 = ttk.Button(self.f1, width = 25, textvariable = self.s8, command = lambda: Thread(target = self.nogear).start())
         self.f0.pack(pady = 5, padx = 5)
-        self.l0.place(x = 100, y = 0) #I'm using place for every widget cause grid and pack mess up the label frame.
+        self.l0.place(x = 100, y = 0)
         self.e0.place(x = 100, y = 20)
         self.f1.pack(pady = 5, padx = 5)
-        self.l1.place(x = 55, y = 100) #Useless fun fact: I centered this text using a ruler.
+        self.l1.place(y=110, relx=0.5, anchor=tk.CENTER)
         self.b0.place(x = 98, y = 50)
         self.b1.place(x = 0, y = 0)
         self.b2.place(x = 160, y = 0)
@@ -219,7 +81,7 @@ class HiddenGearGUI(tk.Frame):
         self.b2.config(state="disabled")
         self.b3.config(state="disabled")
         self.b4.config(state="disabled")
-        self.b5.config(state="disabled") 
+        self.b5.config(state="disabled")
         self.b6.config(state="disabled")
         self.b7.config(state="disabled")
         self.b8.config(state="disabled")
@@ -234,6 +96,172 @@ class HiddenGearGUI(tk.Frame):
         self.b7.config(state="normal")
         self.b8.config(state="normal")
         self.e0.config(state="disabled")
+
+    #Lists containing all the addresses of the gear.
+    unlock = [0x12BD0800, 0x12BDB0B8, 0x12BA90A0, 0x12BD0688, 0x12BDAF40, 0x12BA8F28, 0x12BD94D0, 0x12BA7050, 0x12BC4D78, 0x12BD8D78, 0x12BA71C8, 0x12BC4EF0, 0x12BD8EF0, 0x12BA7340, 0x12BC5068,
+     0x12BD9068, 0x12BB9BC0, 0x12BD2820, 0x12BA0F60]
+    slots = [0x12CD2A60, 0x12CD7D70, 0x12CD8AF0, 0x12CD1DA0, 0x12CD4DA0, 0x12CD7DA0, 0x12CDAD70, 0x12CD2A90, 0x12CD63C0, 0x12CD8B20, 0x12CD2AC0, 0x12CD6480, 0x12CD8B50, 0x12BA7340, 0x12BC5068, 0x12BD9068,
+     0x12CD70B0, 0x12CD3EA0, 0x12CD8BB0]
+
+    #Magic that unlocks the gear.
+    def allgear(self):
+        if self.is_active == False:
+            self.is_active = True
+            try:
+                diff = self.get_diff()
+                self.serialPoke([x + diff for x in self.unlock], 0x00000004) #Unlocks gear.
+                self.serialPoke([x + diff for x in self.slots[0:3]], 0x0000733D) #Adds gear slots.
+                self.serialPoke([x + diff for x in self.slots[3:6]], 0x0000733C) #Adds gear slots.
+                self.serialPoke([x + diff for x in self.slots[6:7]], 0x00006D61) #Adds gear slot.
+                self.serialPoke([x + diff for x in self.slots[7:10]], 0x00006979) #Adds gear slots.
+                self.serialPoke([x + diff for x in self.slots[10:13]], 0x0000697A) #Adds gear slots.
+                self.serialPoke([x + diff for x in self.slots[13:16]], 0x0000697B) #Adds gear slots.
+                self.serialPoke([x + diff for x in self.slots[16:19]], 0x00000000) #Adds gear slots.
+                self.is_active = False
+                messagebox.showinfo(title = "HiddenGearGUI", message = "Unlocked all gear")
+            except Exception as exception:
+                self.is_active = False
+                messagebox.showerror(title = "HiddenGearGUI", message = f"Failed to unlock: {exception}")
+
+    def srl(self):
+        if self.is_active == False:
+            self.is_active = True
+            try:
+                diff = self.get_diff()
+                self.serialPoke([x + diff for x in self.unlock[0:3]], 0x00000004) #Unlocks gear.
+                self.serialPoke([x + diff for x in self.slots[0:3]], 0x0000733D) #Adds gear slots.
+                self.is_active = False
+                messagebox.showinfo(title = "HiddenGearGUI", message = "Unlocked SRL gear")
+            except Exception as exception:
+                self.is_active = False
+                messagebox.showerror(title = "HiddenGearGUI", message = f"Failed to unlock: {exception}")
+
+    def testfire(self):
+        if self.is_active == False:
+            self.is_active = True
+            try:
+                diff = self.get_diff()
+                self.serialPoke([x + diff for x in self.unlock[3:6]], 0x00000004) #Unlocks gear.
+                self.serialPoke([x + diff for x in self.slots[3:6]], 0x0000733C) #Adds gear slots.
+                self.is_active = False
+                messagebox.showinfo(title = "HiddenGearGUI", message = "Unlocked Testfire gear")
+            except Exception as exception:
+                self.is_active = False
+                messagebox.showerror(title = "HiddenGearGUI", message = f"Failed to unlock: {exception}")
+
+    def elite(self):
+        if self.is_active == False:
+            self.is_active = True
+            try:
+                diff = self.get_diff()
+                self.serialPoke([x + diff for x in self.unlock[6:7]], 0x00000004) #Unlocks gear.
+                self.serialPoke([x + diff for x in self.slots[6:7]], 0x00006D61) #Adds gear slot.
+                self.is_active = False
+                messagebox.showinfo(title = "HiddenGearGUI", message = "Unlocked Elite Octoling gear")
+            except Exception as exception:
+                self.is_active = False
+                messagebox.showerror(title = "HiddenGearGUI", message = f"Failed to unlock: {exception}")
+
+    def lv1(self):
+        if self.is_active == False:
+            self.is_active = True
+            try:
+                diff = self.get_diff()
+                self.serialPoke([x + diff for x in self.unlock[7:10]], 0x00000004) #Unlocks gear.
+                self.serialPoke([x + diff for x in self.slots[7:10]], 0x00006979) #Adds gear slots.
+                self.is_active = False
+                messagebox.showinfo(title = "HiddenGearGUI", message = "Unlocked LV1 Hero Armor")
+            except Exception as exception:
+                self.is_active = False
+                messagebox.showerror(title = "HiddenGearGUI", message = f"Failed to unlock: {exception}")
+
+    def lv2(self):
+        if self.is_active == False:
+            self.is_active = True
+            try:
+                diff = self.get_diff()
+                self.serialPoke([x + diff for x in self.unlock[10:13]], 0x00000004) #Unlocks gear.
+                self.serialPoke([x + diff for x in self.slots[10:13]], 0x0000697A) #Adds gear slots.
+                self.is_active = False
+                messagebox.showinfo(title = "HiddenGearGUI", message = "Unlocked LV2 Hero Armor")
+            except Exception as exception:
+                self.is_active = False
+                messagebox.showerror(title = "HiddenGearGUI", message = f"Failed to unlock: {exception}")
+
+    def lv3(self):
+        if self.is_active == False:
+            self.is_active = True
+            try:
+                diff = self.get_diff()
+                self.serialPoke([x + diff for x in self.unlock[13:16]], 0x00000004) #Unlocks gear.
+                self.serialPoke([x + diff for x in self.slots[13:16]], 0x0000697B) #Adds gear slots.
+                self.is_active = False
+                messagebox.showinfo(title = "HiddenGearGUI", message = "Unlocked LV3 Hero Armor")
+            except Exception as exception:
+                self.is_active = False
+                messagebox.showerror(title = "HiddenGearGUI", message = f"Failed to unlock: {exception}")
+
+    def nogear(self):
+        if self.is_active == False:
+            self.is_active = True
+            try:
+                diff = self.get_diff()
+                self.serialPoke([x + diff for x in self.unlock[16:19]], 0x00000004) #Unlocks gear.
+                self.serialPoke([x + diff for x in self.slots[16:19]], 0x00000000) #Adds gear slots.
+                self.is_active = False
+                messagebox.showinfo(title = "HiddenGearGUI", message = "Unlocked Invisible gear")
+            except Exception as exception:
+                self.is_active = False
+                messagebox.showerror(title = "HiddenGearGUI", message = f"Failed to unlock: {exception}")
+
+    #Functions that make the magic work.
+    def connect(self): #Doesn't really connect, just checks if a connection can be established.
+        if self.is_active == False:
+            self.is_active = True
+            if self.is_connected == False:
+                try:
+                    gecko = TCPGecko(self.e0.get())
+                    self.is_connected = True
+                    gecko.s.close()
+                    self.s0.set("Disconnect")
+                    self.hide_connect()
+                    self.is_active = False
+                    messagebox.showinfo(title = "HiddenGearGUI", message = "Connected.")
+                except Exception as exception:
+                    self.is_active = False
+                    messagebox.showerror(title = "HiddenGearGUI", message = f"Failed to connect: {exception}")
+            elif self.is_connected == True:
+                try:
+                    self.is_connected = False
+                    self.s0.set("Connect")
+                    self.hide_gear()
+                    self.is_active = False
+                    messagebox.showinfo(title = "HiddenGearGUI", message = "Disconnected.")
+                except Exception as exception:
+                    self.is_active = False
+                    messagebox.showerror(title = "HiddenGearGUI", message = f"Failed to disconnect: {exception}")
+
+    def get_diff(self): #Sets the memory offset difference (diff).
+        gecko = TCPGecko(self.e0.get())
+        JRPointer = int.from_bytes(gecko.readmem(0x106E975C, 4), "big")
+        if JRPointer in range(0x12000000, 0x14000000):
+            JRAddr = JRPointer + 0x92D8
+            if int.from_bytes(gecko.readmem(JRAddr, 4), "big") == 0x000003F2:
+                diff = JRAddr - 0x12CDADA0
+            else:
+                raise Exception("Failed to get offset.")
+        else:
+            raise Exception("Failed to get offset.")
+        return diff
+
+    def serialPoke(self, addressTable, value):
+        gecko = TCPGecko(self.e0.get())
+        for address in addressTable:
+            if type(address) == int:
+                gecko.pokemem(address, value)
+            else:
+                raise TypeError("Address data type must be int.")
+        gecko.s.close()
 
 #Start of pyGecko code.
 
@@ -361,7 +389,7 @@ class TCPGecko:
         return "0x" + hex(data).lstrip("0x").rstrip("L").zfill(8).upper()
 
 #End of pyGecko code.
- 
+
 if __name__ == "__main__":
     root = tk.Tk()
     app = HiddenGearGUI(master = root)
